@@ -1,0 +1,2 @@
+bin/node/*.js
+node_modules

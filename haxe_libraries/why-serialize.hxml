@@ -1,0 +1,4 @@
+-D why-serialize=0.0.0
+# @install: lix --silent download "gh://github.com/why-haxe/why-serialize#f1cdb840de8f71d2e77f719ee45aad342b37c239" into why-serialize/0.0.0/github/f1cdb840de8f71d2e77f719ee45aad342b37c239
+# -cp ${HAXE_LIBCACHE}/why-serialize/0.0.0/github/f1cdb840de8f71d2e77f719ee45aad342b37c239/src
+-cp ../why-serialize/src

@@ -1,0 +1,14 @@
+{
+  "name": "exp-sync",
+  "license": "MIT",
+  "tags": [
+    "sync"
+  ],
+  "classPath": "src",
+  "contributors": [
+    "kevinresol"
+  ],
+  "releasenote": "initial release",
+  "version": "0.0.0",
+  "dependencies": {}
+}
