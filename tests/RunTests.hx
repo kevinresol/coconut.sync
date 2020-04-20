@@ -5,6 +5,8 @@ import tink.testrunner.*;
 import tink.state.*;
 import exp.sync.*;
 
+using tink.CoreApi;
+
 @:asserts
 class RunTests {
 
@@ -19,7 +21,8 @@ class RunTests {
 	public function test() {
 		
 		var foo = new State(0);
-		var model:Model = {foo: foo}
+		var bar = new State(0);
+		var model:Model = {foo: foo, bar: bar}
 		// var binder = exp.sync.transport.LocalServer.bind;
 		var binder = exp.sync.transport.WebSocketServer.bind.bind(new tink.websocket.servers.NodeWsServer({port: 1324}));
 		var serializer = new why.serialize.StringToChunk(new why.serialize.JsonSerializer<Diff<Model>>());
@@ -33,23 +36,45 @@ class RunTests {
 				
 				var client = new Client<Model>(transport, serializer);
 				
-				var expected = foo.value;
+				var expected_foo = foo.value;
+				var expected_bar = bar.value;
+				
+				var fooDone = Future.trigger();
+				var barDone = Future.trigger();
+				
 				client.model.handle(function(model) {
-					asserts.assert(model.foo.value == expected);
+					asserts.assert(model.foo.value == expected_foo);
+					asserts.assert(model.bar.value == expected_bar);
+					
 					model.foo.bind(null, foo -> {
-						asserts.assert(foo == expected);
-						if(expected == 3) asserts.done();
+						asserts.assert(foo == expected_foo);
+						if(expected_foo == 3) fooDone.trigger(Noise);
+					});
+					model.bar.bind(null, bar -> {
+						asserts.assert(bar == expected_bar);
+						if(expected_bar == 3) barDone.trigger(Noise);
 					});
 				});
 				
-				function set(v) {
-					expected = v;
+				function set_foo(v) {
+					expected_foo = v;
 					foo.set(v);
 				}
 				
-				haxe.Timer.delay(set.bind(3), 200);
-				haxe.Timer.delay(set.bind(2), 100);
-				set(1);
+				function set_bar(v) {
+					expected_bar = v;
+					bar.set(v);
+				}
+				
+				haxe.Timer.delay(set_foo.bind(3), 200);
+				haxe.Timer.delay(set_foo.bind(2), 100);
+				set_foo(1);
+				
+				haxe.Timer.delay(set_bar.bind(3), 250);
+				haxe.Timer.delay(set_bar.bind(2), 50);
+				set_bar(1);
+				
+				Promise.lift(fooDone.asFuture() && barDone.asFuture()).handle(asserts.handle);
 			case Failure(e):
 				asserts.fail(e);
 		});
@@ -61,6 +86,7 @@ class RunTests {
 
 typedef Model = {
 	final foo:Observable<Int>;
+	final bar:Observable<Int>;
 }
 
 

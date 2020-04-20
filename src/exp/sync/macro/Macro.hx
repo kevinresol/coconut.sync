@@ -28,7 +28,7 @@ typedef Property = {
 }
 
 abstract Name(String) from String to String {
-	public inline function toCamelCase():String {
+	public inline function toPascalCase():String {
 		return this.substr(0, 1).toUpperCase() + this.substr(1);
 	}
 }

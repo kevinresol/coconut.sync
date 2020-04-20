@@ -40,7 +40,7 @@ class Diff {
 			
 			for(field in exp.sync.macro.Macro.getFields(ctx.type, ctx.pos)) {
 				def.fields.push({
-					name: field.name.toCamelCase(),
+					name: field.name.toPascalCase(),
 					kind: FFun({
 						args: [field.name.toArg(field.type.toComplex())],
 						expr: null,

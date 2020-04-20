@@ -44,8 +44,17 @@ class Server {
 	public static macro function create(binder, serializer, model) {
 		var type = Context.typeof(model);
 		var fields = Macro.getFields(type, model.pos);
-		var full = EObjectDecl([for(field in fields) {field: field.name, expr: macro $p{['model', field.name, 'value']}}]).at();
-		var partials = [for(field in fields) macro $p{['model', field.name]}.bind(null, v -> send(Partial($i{field.name.toCamelCase()}(v))))];
+		var full = EObjectDecl([for(field in fields) {
+			var name = field.name;
+			{
+				field: name,
+				expr: macro model.$name.value,
+			}
+		}]).at();
+		var partials = [for(field in fields) {
+			var name = field.name;
+			macro model.$name.bind(null, v -> send(Partial($i{name.toPascalCase()}(v))));
+		}];
 		var modelCt = type.toComplex();
 		var diffCt = macro:exp.sync.Diff<$modelCt>;
 		

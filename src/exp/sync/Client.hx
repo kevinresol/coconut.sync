@@ -50,9 +50,32 @@ class Client {
 			var diffCt = macro:exp.sync.Diff<$modelCt>;
 			
 			var fields = Macro.getFields(ctx.type, ctx.pos);
-			var init = [for(field in fields) macro $p{['states', field.name]} = new tink.state.State($p{['v', field.name]})];
-			var obj = EObjectDecl([for(field in fields) {field: field.name, expr: macro $p{['states', field.name]}}]).at();
+			var init = [for(field in fields) {
+				var name = field.name;
+				macro states.$name = new tink.state.State(v.$name);
+			}];
+			var obj = EObjectDecl([for(field in fields) {
+				var name = field.name;
+				{
+					field: name,
+					expr: macro states.$name,
+				}
+			}]).at();
 			init.push(macro first.trigger($obj));
+			
+			var parts:Array<Case> = [for(field in fields) {
+				var name = field.name;
+				{
+					values: [macro Partial($i{name.toPascalCase()}(v))],
+					expr: macro states.$name.set(v),
+				}
+			}];
+			
+			var switchExpr = ESwitch(
+				macro data, 
+				[{values: [macro Full(v)], expr: macro $b{init}}].concat(parts),
+				null
+			).at();
 			
 			var def = macro class $name extends exp.sync.Client.ClientBase<$modelCt> {
 				var states = new exp.sync.Client.States<$modelCt>();
@@ -80,12 +103,7 @@ class Client {
 				}
 	
 				function apply(data:$diffCt) {
-					switch data {
-						case Full(v):
-							$b{init};
-						case Partial(Foo(v)): 
-							states.foo.set(v);
-					}
+					$switchExpr;
 				}
 			}
 			
