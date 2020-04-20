@@ -8,6 +8,9 @@ import tink.Chunk;
 using tink.io.Source;
 
 class Server<T> {
+	// TODO: implement proper stream parser without needing to split with delimiter
+	static final DELIMITER:Chunk = '|';
+	
 	public static macro function create(binder, serializer, model);
 	
 	static function _create<T>(binder:exp.sync.transport.Server.Binder, observer:(signal:SignalTrigger<Yield<Chunk, Error>>)->Void):Promise<Server<T>> {
@@ -34,6 +37,7 @@ class Server<T> {
 import exp.sync.macro.Macro;
 import haxe.macro.Expr;
 import haxe.macro.Context;
+
 using tink.MacroApi;
 
 class Server {
@@ -48,7 +52,7 @@ class Server {
 		var observer = macro function(signal) {
 			
 			function send(v:$diffCt) {
-				var chunk = serializer.serialize(v) + '|';
+				var chunk = serializer.serialize(v) & exp.sync.Server.DELIMITER;
 				signal.trigger(Data(chunk));
 			}
 			

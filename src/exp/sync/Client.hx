@@ -16,6 +16,9 @@ class Client<T> {}
 class States<T> {}
 
 class ClientBase<T> {
+	// TODO: implement proper stream parser without needing to split with delimiter
+	static final DELIMITER:Chunk = '|';
+	
 	public final model:Future<T>;
 	
 	final first = Future.trigger();
@@ -28,7 +31,7 @@ class ClientBase<T> {
 		parse(incoming);
 	}
 	
-	function parse(incoming:RealSource):Void {}
+	function parse(incoming:RealSource):Void throw 'abstract';
 }
 #else
 
@@ -38,6 +41,7 @@ import tink.macro.BuildCache;
 using tink.MacroApi;
 
 class Client {
+	
 	public static function build() {
 		return BuildCache.getType('exp.sync.Client', (ctx:BuildContext) -> {
 			var name = ctx.name;
@@ -54,7 +58,7 @@ class Client {
 				var states = new exp.sync.Client.States<$modelCt>();
 				
 				override function parse(incoming:tink.io.Source.RealSource) {
-					var parser = new tink.io.StreamParser.Splitter('|');
+					var parser = new tink.io.StreamParser.Splitter(exp.sync.Client.ClientBase.DELIMITER);
 					tink.io.Source.RealSourceTools.parseStream(incoming, parser)
 						.map(o -> switch o {
 							case haxe.ds.Option.Some(chunk): 
