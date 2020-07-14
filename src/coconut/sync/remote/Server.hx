@@ -13,7 +13,7 @@ class Server {
 	
 	public static macro function create(createServer, model, serializer) {
 		final modelCt = model.typeof().sure().toComplex();
-		final serializerCt = macro:why.Serializer<coconut.sync.Change<$modelCt, coconut.sync.Diff<$modelCt>>, String>;
+		final serializerCt = macro:why.Serializer<coconut.sync.DiffKind<$modelCt>, String>;
 		return macro {
 			final model:$modelCt = $model;
 			final serializer:$serializerCt = $serializer;

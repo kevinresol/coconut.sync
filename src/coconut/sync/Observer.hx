@@ -35,12 +35,12 @@ class Observer {
 		return BuildCache.getType('coconut.sync.ModelObserver', (ctx:BuildContext) -> {
 			final name = ctx.name;
 			final modelCt = ctx.type.toComplex();
-			final changeCt = macro:coconut.sync.Change<$modelCt, coconut.sync.Diff<$modelCt>>;
+			final diffKindCt = macro:coconut.sync.DiffKind<$modelCt>;
 			
 			var body = [];
 			final def = macro class $name {
 				public function new(model:$modelCt, direct = false) {
-					this = new tink.core.Signal((trigger:$changeCt->Void) -> {
+					this = new tink.core.Signal((trigger:$diffKindCt->Void) -> {
 						var binding:tink.core.Callback.CallbackLink = null;
 						$b{body};
 						binding;
@@ -79,7 +79,7 @@ class Observer {
 				}
 			}
 			
-			final underlying = macro:tink.core.Signal<$changeCt>;
+			final underlying = macro:tink.core.Signal<$diffKindCt>;
 			def.kind = TDAbstract(underlying, [underlying], [underlying]);
 			def.meta = [{name: ':forward', pos: ctx.pos}];
 			def.pack = ['coconut', 'sync'];

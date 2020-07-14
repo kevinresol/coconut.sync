@@ -1,8 +1,6 @@
 package coconut.sync;
 
 #if !macro
-// @:genericBuild(coconut.sync.Diff.buildKind())
-// class DiffKind<T> {}
 @:genericBuild(coconut.sync.Diff.build())
 class Diff<T> {}
 #else
@@ -13,10 +11,6 @@ import tink.macro.BuildCache;
 using tink.MacroApi;
 
 class Diff {
-	// public static function buildKind() {
-	// 	return switch Context
-	// }
-	
 	public static function build() {
 		return BuildCache.getType('coconut.sync.Diff', (ctx:BuildContext) -> {
 			var name = ctx.name;
@@ -28,7 +22,7 @@ class Diff {
 			for(field in getFields(ctx.type, ctx.pos)) {
 				final fname = capitalize(field.name);
 				var fct = field.type.toComplex();
-				if(isModel(field.type, field.pos)) fct = macro:coconut.sync.Change<$fct, coconut.sync.Diff<$fct>>;
+				if(isModel(field.type, field.pos)) fct = macro:coconut.sync.DiffKind<$fct>;
 				
 				def.fields = def.fields.concat((macro class {
 					function $fname(v:$fct);

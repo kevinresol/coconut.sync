@@ -53,7 +53,7 @@ class RunTests {
 	
 	public function apply() {
 		
-		final signal:SignalTrigger<Change<MyModel, Diff<MyModel>>> = Signal.trigger();
+		final signal:SignalTrigger<DiffKind<MyModel>> = Signal.trigger();
 		var ext:External<MyModel> = null;
 		
 		signal.listen(function(change) {
@@ -85,7 +85,7 @@ class RunTests {
 	
 	public function server() {
 		var model = new MyModel();
-		var serializer = new why.serialize.JsonSerializer<Change<MyModel, Diff<MyModel>>>();
+		var serializer = new why.serialize.JsonSerializer<DiffKind<MyModel>>();
 		coconut.sync.remote.Server.create(why.duplex.websocket.WebSocketServer.bind.bind({port: 8080}), model, serializer)
 			.handle(function(o) switch o {
 				case Success(server):
