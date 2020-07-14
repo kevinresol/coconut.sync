@@ -16,42 +16,39 @@ class SubModel implements Model {
 	@:editable var float:Float = @byDefault 1.1;
 }
 
-class Main {
-	static function main() {
-		Observer.observe()
-	}
-}
-
-typedef Model = {
-	foo:Observable<Int>,
-}
-
 class Server {
 	static function main() {
-		var model:Model = ...;
-		var binder = WebSocketServer.bind.bind(new NodeWsServer({port: 1324}));
-		var serializer = new StringToChunk(new JsonSerializer<Diff<Model>>());
-		Server.create(binder, serializer, model).handle(function(o) switch o {
-			case Success(server):
-				// sync server running:
-				// from now on, whenever `model.foo` changes, the updates will be broadcast to all connected clients 
-			case Failure(e):
-				// errored in creating the sync server
-		});
+		var model = new MyModel();
+		var serializer = new why.serialize.JsonSerializer<DiffKind<MyModel>>();
+		coconut.sync.remote.Server.create(why.duplex.websocket.WebSocketServer.bind.bind({port: 8080}), model, serializer)
+			.handle(function(o) switch o {
+				case Success(server):
+					// server is successfully set up
+					// it will listen for incoming connections
+					// when a client is connected, it will send a full current snapshot of the model to the client
+					// then any subsequent changes will also be sent
+				case Failure(e):
+					trace(e);
+			});
 	}
 }
 
 class Client {
 	static function main() {
-		var transport = new WebSocketClient(new JsConnector('ws://localhost:1324'));
-		var client = new Client<Model>(transport, serializer);
-		
-		client.model.handle(function(model:Model) {
-			// `client.model` will resolve after connecting to server and obtaining the initial model values
-			
-			// server changes can be observed from now on
-			model.foo.bind(null, foo -> trace(foo));
-		});
+		var serializer = new why.serialize.JsonSerializer<DiffKind<MyModel>>();
+		coconut.sync.remote.Client.create(why.duplex.websocket.WebSocketClient.connect.bind('ws://localhost:8080'), (serializer:MyModel))
+			.handle(function(o) switch o {
+				case Success(client):
+					// client successfully connected to server
+					
+					client.model.handle(model -> {
+						// client successfully received the initial model snapshot
+						// from now on `model` can be used just like an ordinary `MyModel`
+						// except its type is `External<MyModel>` where all fields become `@:external`
+					});
+				case Failure(e):
+					trace(e);
+			});
 	}
 }
 ```
@@ -59,4 +56,3 @@ class Client {
 TODO:
 
 - Batch changes
-- Support more data types (e.g. nested object)
