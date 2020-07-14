@@ -1,10 +1,37 @@
 # Coconut Data Synchronization
 
-This library allows observing the changes of a coconut model and applying such changes to another model instance.
+This library enables real-time & uni-directional synchronization of a coconut model over the network.
 
-The ultimate goal is to sync a coconut model to a remote end.
+## Components
 
-Example:
+**Observer**
+
+```haxe
+class Observer {
+	// Observe a model and emit a stream of "Diff" objects
+	public static function observe<M>(model:M):Signal<Diff<M>>;
+}
+```
+
+**Applier**
+
+```haxe
+class Applier {
+	// Apply "Diff" objects to an "External" model to update its values
+	public static function apply<M>(model:External<M>, diff:Diff<M>):Void;
+}
+```
+
+**External**
+
+`External<M>` implements `coconut.data.Model` and is basically the same as `M`, except all its fields becomes `@:external`
+
+**Diff**
+
+`Diff<M>` is an `enum` to describe the changes of a particular field of a model
+
+
+## Example:
 
 ```haxe
 class MyModel implements Model {
@@ -44,7 +71,7 @@ class Client {
 					client.model.handle(model -> {
 						// client successfully received the initial model snapshot
 						// from now on `model` can be used just like an ordinary `MyModel`
-						// except its type is `External<MyModel>` where all fields become `@:external`
+						// except its type is `External<MyModel>` where all fields become `@:external` and are readonly
 					});
 				case Failure(e):
 					trace(e);
