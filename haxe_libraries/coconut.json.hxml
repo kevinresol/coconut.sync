@@ -1,4 +1,5 @@
 -lib coconut.data
+-lib tink_json
 -cp ${SCOPE_DIR}/../coconut.json/src
 -D coconut.json=0.0.0
---macro Sys.println("haxe_libraries/coconut.json.hxml:3: [Warning] Using dev version of library coconut.json")
+--macro Sys.println("haxe_libraries/coconut.json.hxml:4: [Warning] Using dev version of library coconut.json")

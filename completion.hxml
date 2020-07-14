@@ -1,0 +1,5 @@
+tests.hxml
+--library travix
+--library coconut.sync
+--no-output
+--js bin/completion.js

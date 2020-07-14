@@ -15,8 +15,8 @@ class Server {
 		final modelCt = model.typeof().sure().toComplex();
 		final serializerCt = macro:why.Serializer<coconut.sync.DiffKind<$modelCt>, String>;
 		return macro {
-			final model:$modelCt = $model;
-			final serializer:$serializerCt = $serializer;
+			@:pos(model.pos) final model:$modelCt = $model;
+			@:pos(serializer.pos) final serializer:$serializerCt = $serializer;
 			final signal = coconut.sync.Observer.observe(model);
 			
 			$createServer()

@@ -89,8 +89,20 @@ class RunTests {
 		coconut.sync.remote.Server.create(why.duplex.websocket.WebSocketServer.bind.bind({port: 8080}), model, serializer)
 			.handle(function(o) switch o {
 				case Success(server):
-					trace(server.close);
 					asserts.done();
+				case Failure(e):
+					asserts.fail(e);
+			});
+		return asserts;
+	}
+	
+	public function client() {
+		// FIXME: currently this test relies on the fact that the server opened in the previous test is not closed
+		var serializer = new why.serialize.JsonSerializer<DiffKind<MyModel>>();
+		coconut.sync.remote.Client.create(why.duplex.websocket.WebSocketClient.connect.bind('ws://localhost:8080'), (serializer:MyModel))
+			.handle(function(o) switch o {
+				case Success(client):
+					client.model.handle(asserts.done);
 				case Failure(e):
 					asserts.fail(e);
 			});

@@ -5,7 +5,6 @@
 -lib tink_unittest
 
 -lib coconut.json
--lib tink_json
 -lib why-serialize
 -lib why-duplex
 
