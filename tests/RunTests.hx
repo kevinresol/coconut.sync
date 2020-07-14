@@ -2,11 +2,12 @@ package ;
 
 import tink.unit.*;
 import tink.testrunner.*;
-import tink.state.*;
-import exp.sync.*;
+import coconut.data.*;
+import coconut.sync.*;
 
 using tink.CoreApi;
 
+@:timeout(10000)
 @:asserts
 class RunTests {
 
@@ -18,101 +19,104 @@ class RunTests {
 
 	function new() {}
 	
-	public function test() {
+	public function observe() {
+		// Callback.defer(() -> {
+		var model = new MyModel();
+		var observer = new ModelObserver<MyModel>(model, true);
 		
-		var foo = new State(0);
-		var bar = new State(0);
-		var model:Model = {foo: foo, bar: bar}
-		// var binder = exp.sync.transport.LocalServer.bind;
-		var binder = exp.sync.transport.WebSocketServer.bind.bind(new tink.websocket.servers.NodeWsServer({port: 1324}));
-		var serializer = new why.serialize.StringToChunk(new why.serialize.JsonSerializer<Diff<Model>>());
-		Server.create(binder, serializer, model).handle(function(o) switch o {
-			case Success(server):
-				// var server:exp.sync.transport.LocalServer = cast @:privateAccess server.transport;
-				// var transport = new exp.sync.transport.LocalClient(server);
-				
-				untyped global.WebSocket = js.Lib.require('ws');
-				var transport = new exp.sync.transport.WebSocketClient(new tink.websocket.clients.JsConnector('ws://localhost:1324'));
-				
-				var client = new Client<Model>(transport, serializer);
-				
-				var expected_foo = foo.value;
-				var expected_bar = bar.value;
-				
-				var fooDone = Future.trigger();
-				var barDone = Future.trigger();
-				
-				client.model.handle(function(model) {
-					asserts.assert(model.foo.value == expected_foo);
-					asserts.assert(model.bar.value == expected_bar);
-					
-					model.foo.bind(null, foo -> {
-						asserts.assert(foo == expected_foo);
-						if(expected_foo == 3) fooDone.trigger(Noise);
-					});
-					model.bar.bind(null, bar -> {
-						asserts.assert(bar == expected_bar);
-						if(expected_bar == 3) barDone.trigger(Noise);
-					});
-				});
-				
-				function set_foo(v) {
-					expected_foo = v;
-					foo.set(v);
-				}
-				
-				function set_bar(v) {
-					expected_bar = v;
-					bar.set(v);
-				}
-				
-				haxe.Timer.delay(set_foo.bind(3), 200);
-				haxe.Timer.delay(set_foo.bind(2), 100);
-				set_foo(1);
-				
-				haxe.Timer.delay(set_bar.bind(3), 250);
-				haxe.Timer.delay(set_bar.bind(2), 50);
-				set_bar(1);
-				
-				Promise.lift(fooDone.asFuture() && barDone.asFuture()).handle(asserts.handle);
-			case Failure(e):
-				asserts.fail(e);
-		});
+		var current = null;
+		observer.handle(function(v) current = v);
 		
-		return asserts;
-	}
-}
-
-
-typedef Model = {
-	final foo:Observable<Int>;
-	final bar:Observable<Int>;
-}
-
-
-/*
-
-
-class Sync {
-	static function server() {
-		var model:Model;
-		var serializer;
-		var transport = new WebSocketServerTransport(1324);
-		var server = new SyncServer<Model>(WebSocketServerTransport.bind(1324), serializer, model);
+		model.i = 1;
+		asserts.assert(current.match(Member(i(1))));
 		
+		model.s = new SubModel();
+		switch current {
+			case Member(s(Full(v))): asserts.assert(v == model.s);
+			case _: asserts.fail('unexpected');
+		}
+		
+		model.s.i1 = 5;
+		asserts.assert(current.match(Member(s(Member(i1(5))))));
+		
+		model.s.s1 = new SubModel2();
+		switch current {
+			case Member(s(Member(s1(Full(v))))): asserts.assert(v == model.s.s1);
+			case _: asserts.fail('unexpected');
+		}
+		
+		model.s.s1.i2 = 6;
+		asserts.assert(current.match(Member(s(Member(s1(Member(i2(6))))))));
+		
+		
+			
+		return asserts.done();
 	}
 	
-	static function client() {
-		var serializer;
-		var transport = new WebSocketClientTransport('localhost', 1324);
-		var client = new SyncClient<Model>(transport, serializer);
-		client.model.handle(function(model) {
-			$type(model.data); // Model
-			$type(model.data.foo); // Observable<Int>
-			$type(model.control.error); // Signal<Error>
-			$type(model.control.disconnected); // Future<Noise>
-			$type(model.control.lastUpdate); // Observable<Date>
+	public function apply() {
+		
+		final signal:SignalTrigger<Part<MyModel, Diff<MyModel>>> = Signal.trigger();
+		var ext:External<MyModel> = null;
+		
+		/*
+		final c:Container<MyModel> = null;
+		
+		class Container {
+			function handler(part:Part<MyModel, Diff<MyModel>>) {
+				switch part {
+					
+				}
+			}
+		}
+		
+		signal.listen(c.handler);
+		*/
+		
+		
+		// signal.listen(Applier.make(ext));
+		
+		signal.listen(function(part) {
+			switch part {
+				case Full(model):
+					ext = new External<MyModel>(model);
+				case Member(diff):
+					new Applier<MyModel>().apply(ext, diff);
+			}
 		});
+		
+		signal.trigger(Full(new MyModel()));
+		asserts.assert(ext != null);
+		asserts.assert(ext.i == 0);
+		
+		signal.trigger(Member(i(1)));
+		asserts.assert(ext.i == 1);
+		
+		var sub = ext.s;
+		signal.trigger(Member(s(Full(new SubModel()))));
+		asserts.assert(ext.s != sub);
+		asserts.assert(ext.s.i1 == 0);
+		
+		signal.trigger(Member(s(Member(i1(2)))));
+		asserts.assert(ext.s.i1 == 2);
+		
+		return asserts.done();
+	}
+	
+	static function update() {
+		tink.state.Observable.updateAll();
 	}
 }
-*/
+
+class MyModel implements Model {
+	@:editable var i:Int = @byDefault 0;
+	@:editable var s:SubModel = @byDefault new SubModel();
+}
+
+class SubModel implements Model {
+	@:editable var i1:Int = @byDefault 0;
+	@:editable var s1:SubModel2 = @byDefault new SubModel2();
+}
+
+class SubModel2 implements Model {
+	@:editable var i2:Int = @byDefault 0;
+}

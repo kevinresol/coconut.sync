@@ -1,5 +1,5 @@
 {
-  "name": "exp-sync",
+  "name": "coconut.sync",
   "license": "MIT",
   "tags": [
     "sync"
@@ -10,5 +10,7 @@
   ],
   "releasenote": "initial release",
   "version": "0.0.0",
-  "dependencies": {}
+  "dependencies": {
+    "coconut.data": ""
+  }
 }
