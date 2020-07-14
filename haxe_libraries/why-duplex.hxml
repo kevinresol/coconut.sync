@@ -1,5 +1,5 @@
--lib tink_core
+# @install: lix --silent download "gh://github.com/why-haxe/why-duplex#a30846b7d9c3628e351d44b0f7dff4f3842213a8" into why-duplex/0.0.0/github/a30846b7d9c3628e351d44b0f7dff4f3842213a8
 -lib tink_chunk
--cp ${SCOPE_DIR}/../why-duplex/src
+-lib tink_core
+-cp ${HAXE_LIBCACHE}/why-duplex/0.0.0/github/a30846b7d9c3628e351d44b0f7dff4f3842213a8/src
 -D why-duplex=0.0.0
---macro Sys.println("haxe_libraries/why-duplex.hxml:4: [Warning] Using dev version of library why-duplex")

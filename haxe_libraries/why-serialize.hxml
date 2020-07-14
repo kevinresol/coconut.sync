@@ -1,3 +1,3 @@
--cp ${SCOPE_DIR}/../why-serialize/src
+# @install: lix --silent download "gh://github.com/why-haxe/why-serialize#00416dfa1d1e19564e1ae51c06015fb17a053518" into why-serialize/0.0.0/github/00416dfa1d1e19564e1ae51c06015fb17a053518
+-cp ${HAXE_LIBCACHE}/why-serialize/0.0.0/github/00416dfa1d1e19564e1ae51c06015fb17a053518/src
 -D why-serialize=0.0.0
---macro Sys.println("haxe_libraries/why-serialize.hxml:2: [Warning] Using dev version of library why-serialize")
