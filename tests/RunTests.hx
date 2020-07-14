@@ -20,12 +20,12 @@ class RunTests {
 	function new() {}
 	
 	public function observe() {
-		// Callback.defer(() -> {
 		var model = new MyModel();
-		var observer = new ModelObserver<MyModel>(model, true);
+		var signal = Observer.observe(model, true);
 		
 		var current = null;
-		observer.handle(function(v) current = v);
+		signal.handle(function(v) current = v);
+		asserts.assert(current == null);
 		
 		model.i = 1;
 		asserts.assert(current.match(Member(i(1))));
@@ -48,39 +48,20 @@ class RunTests {
 		model.s.s1.i2 = 6;
 		asserts.assert(current.match(Member(s(Member(s1(Member(i2(6))))))));
 		
-		
-			
 		return asserts.done();
 	}
 	
 	public function apply() {
 		
-		final signal:SignalTrigger<Part<MyModel, Diff<MyModel>>> = Signal.trigger();
+		final signal:SignalTrigger<Change<MyModel, Diff<MyModel>>> = Signal.trigger();
 		var ext:External<MyModel> = null;
 		
-		/*
-		final c:Container<MyModel> = null;
-		
-		class Container {
-			function handler(part:Part<MyModel, Diff<MyModel>>) {
-				switch part {
-					
-				}
-			}
-		}
-		
-		signal.listen(c.handler);
-		*/
-		
-		
-		// signal.listen(Applier.make(ext));
-		
-		signal.listen(function(part) {
-			switch part {
+		signal.listen(function(change) {
+			switch change {
 				case Full(model):
 					ext = new External<MyModel>(model);
 				case Member(diff):
-					new Applier<MyModel>().apply(ext, diff);
+					Applier.apply(ext, diff);
 			}
 		});
 		
@@ -100,10 +81,6 @@ class RunTests {
 		asserts.assert(ext.s.i1 == 2);
 		
 		return asserts.done();
-	}
-	
-	static function update() {
-		tink.state.Observable.updateAll();
 	}
 }
 

@@ -1,12 +1,27 @@
-# [Experimental] Remote State Synchronization
+# Coconut Data Synchronization
 
-Based on `Observable` from [tink_state](https://github.com/haxetink/tink_state).
+This library allows observing the changes of a coconut model and applying such changes to another model instance.
 
-Given a bucket of observable values on a server, this library supports synchronizing the changes to a remote observer (e.g. over the network)
+The ultimate goal is to sync a coconut model to a remote end.
 
 Example:
 
 ```haxe
+class MyModel implements Model {
+	@:editable var int:Int = @byDefault 1;
+	@:editable var sub:SubModel = @byDefault new SubModel();
+}
+
+class SubModel implements Model {
+	@:editable var float:Float = @byDefault 1.1;
+}
+
+class Main {
+	static function main() {
+		Observer.observe()
+	}
+}
+
 typedef Model = {
 	foo:Observable<Int>,
 }

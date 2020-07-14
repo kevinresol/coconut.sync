@@ -2,8 +2,13 @@ package coconut.sync;
 
 #if !macro
 
+
+class Applier {
+	public static macro function apply(model, diff);
+}
+
 @:genericBuild(coconut.sync.Applier.build())
-class Applier<Model> {}
+class DiffApplier<Model> {}
 
 #else
 
@@ -15,8 +20,19 @@ import coconut.sync.macro.Macro.*;
 using tink.MacroApi;
 
 class Applier {
+	
+	public static macro function apply(ext:Expr, diff:Expr) {
+		return switch ext.typeof() {
+			case Success(type):
+				final ct = (macro @:privateAccess $ext._cocosync_model()).typeof().sure().toComplex();
+				macro new coconut.sync.Applier.DiffApplier<$ct>().apply($ext, $diff);
+			case Failure(e):
+				ext.pos.error(e);
+		}
+	}
+	
 	public static function build() {
-		return BuildCache.getType('coconut.sync.Applier', (ctx:BuildContext) -> {
+		return BuildCache.getType('coconut.sync.DiffApplier', (ctx:BuildContext) -> {
 			final name = ctx.name;
 			final modelCt = ctx.type.toComplex();
 			final extCt = macro:coconut.sync.External<$modelCt>;
@@ -35,7 +51,7 @@ class Applier {
 					});
 					cases.push({
 						values: [macro $i{fname}(Member(v))],
-						expr: macro new coconut.sync.Applier<$fct>().apply(model.$fname, v),
+						expr: macro coconut.sync.Applier.apply(model.$fname, v),
 					});
 				} else {
 					cases.push({

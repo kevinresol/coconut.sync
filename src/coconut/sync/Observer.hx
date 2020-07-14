@@ -2,7 +2,11 @@ package coconut.sync;
 
 #if !macro
 
-@:genericBuild(coconut.sync.ModelObserver.build())
+class Observer {
+	public static macro function observe(model, ?direct);
+}
+
+@:genericBuild(coconut.sync.Observer.build())
 class ModelObserver<Model> {}
 
 #else
@@ -14,19 +18,29 @@ import tink.macro.BuildCache;
 
 using tink.MacroApi;
 
-class ModelObserver {
+class Observer {
 	static final MODEL = Context.getType('coconut.data.Model');
+	
+	public static macro function observe(model:Expr, direct:Expr) {
+		return switch model.typeof() {
+			case Success(type):
+				final ct = type.toComplex();
+				macro new coconut.sync.Observer.ModelObserver<$ct>($model, $direct);
+			case Failure(e):
+				model.pos.error(e);
+		}
+	}
 	
 	public static function build() {
 		return BuildCache.getType('coconut.sync.ModelObserver', (ctx:BuildContext) -> {
 			final name = ctx.name;
 			final modelCt = ctx.type.toComplex();
-			final partCt = macro:coconut.sync.Part<$modelCt, coconut.sync.Diff<$modelCt>>;
+			final changeCt = macro:coconut.sync.Change<$modelCt, coconut.sync.Diff<$modelCt>>;
 			
 			var body = [];
 			final def = macro class $name {
 				public function new(model:$modelCt, direct = false) {
-					this = new tink.core.Signal((trigger:$partCt->Void) -> {
+					this = new tink.core.Signal((trigger:$changeCt->Void) -> {
 						var binding:tink.core.Callback.CallbackLink = null;
 						$b{body};
 						binding;
@@ -55,7 +69,7 @@ class ModelObserver {
 								binding.cancel();
 								if(first) first = false;
 								else trigger(Member($i{ename}(Full(model))));
-								binding = new coconut.sync.ModelObserver<$fct>(model, direct).handle(v -> {
+								binding = coconut.sync.Observer.observe(model, direct).handle(v -> {
 									trigger(Member($i{ename}(v)));
 								});
 							}),
@@ -65,7 +79,7 @@ class ModelObserver {
 				}
 			}
 			
-			final underlying = macro:tink.core.Signal<$partCt>;
+			final underlying = macro:tink.core.Signal<$changeCt>;
 			def.kind = TDAbstract(underlying, [underlying], [underlying]);
 			def.meta = [{name: ':forward', pos: ctx.pos}];
 			def.pack = ['coconut', 'sync'];

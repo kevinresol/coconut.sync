@@ -35,6 +35,9 @@ class External {
 				
 				@:transition
 				function _cocosync_patch(o) return tink.core.Promise.resolve(o);
+				
+				// just to store the type of the original model
+				@:noCompletion inline function _cocosync_model():$modelCt return null;
 			}
 			
 			for(field in getFields(ctx.type, ctx.pos)) {

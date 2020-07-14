@@ -21,7 +21,7 @@ class Diff {
 			for(field in getFields(ctx.type, ctx.pos)) {
 				final fname = capitalize(field.name);
 				var fct = field.type.toComplex();
-				if(isModel(field.type, field.pos)) fct = macro:coconut.sync.Part<$fct, coconut.sync.Diff<$fct>>;
+				if(isModel(field.type, field.pos)) fct = macro:coconut.sync.Change<$fct, coconut.sync.Diff<$fct>>;
 				
 				def.fields = def.fields.concat((macro class {
 					function $fname(v:$fct);

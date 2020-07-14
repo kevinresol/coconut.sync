@@ -1,6 +1,6 @@
 package coconut.sync;
 
-enum Part<F, M> {
+enum Change<F, M> {
 	Full(v:F);
 	Member(v:M);
 }
