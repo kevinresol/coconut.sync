@@ -83,3 +83,4 @@ class Client {
 TODO:
 
 - Batch changes
+- Support other mutable yet observable data structures (e.g. `ObservableArray`)
