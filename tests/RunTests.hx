@@ -82,18 +82,39 @@ class RunTests {
 		
 		return asserts.done();
 	}
+	
+	public function server() {
+		var model = new MyModel();
+		var serializer = new why.serialize.JsonSerializer<Change<MyModel, Diff<MyModel>>>();
+		coconut.sync.remote.Server.create(why.duplex.websocket.WebSocketServer.bind.bind({port: 8080}), model, serializer)
+			.handle(function(o) switch o {
+				case Success(server):
+					trace(server.close);
+					asserts.done();
+				case Failure(e):
+					asserts.fail(e);
+			});
+		return asserts;
+	}
 }
 
+@:jsonStringify((_:coconut.json.Serializer<RunTests.MyModel>))
+@:jsonParse((_:coconut.json.Unserializer<RunTests.MyModel>))
 class MyModel implements Model {
 	@:editable var i:Int = @byDefault 0;
 	@:editable var s:SubModel = @byDefault new SubModel();
 }
 
+
+@:jsonStringify((_:coconut.json.Serializer<RunTests.SubModel>))
+@:jsonParse((_:coconut.json.Unserializer<RunTests.SubModel>))
 class SubModel implements Model {
 	@:editable var i1:Int = @byDefault 0;
 	@:editable var s1:SubModel2 = @byDefault new SubModel2();
 }
 
+@:jsonStringify((_:coconut.json.Serializer<RunTests.SubModel2>))
+@:jsonParse((_:coconut.json.Unserializer<RunTests.SubModel2>))
 class SubModel2 implements Model {
 	@:editable var i2:Int = @byDefault 0;
 }

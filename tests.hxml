@@ -3,7 +3,11 @@
 # -dce full
 
 -lib tink_unittest
--lib tink_websocket
+
+-lib coconut.json
+-lib tink_json
+-lib why-serialize
+-lib why-duplex
 
 -D analyzer-optimize
 -D no-deprecation-warnings

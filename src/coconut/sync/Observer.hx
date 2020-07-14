@@ -21,7 +21,7 @@ using tink.MacroApi;
 class Observer {
 	static final MODEL = Context.getType('coconut.data.Model');
 	
-	public static macro function observe(model:Expr, direct:Expr) {
+	public static macro function observe(model:Expr, ?direct:Expr) {
 		return switch model.typeof() {
 			case Success(type):
 				final ct = type.toComplex();

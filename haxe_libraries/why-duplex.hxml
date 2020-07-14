@@ -1,0 +1,5 @@
+-lib tink_core
+-lib tink_chunk
+-cp ${SCOPE_DIR}/../why-duplex/src
+-D why-duplex=0.0.0
+--macro Sys.println("haxe_libraries/why-duplex.hxml:4: [Warning] Using dev version of library why-duplex")
