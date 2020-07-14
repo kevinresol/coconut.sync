@@ -38,4 +38,4 @@ jobs:
       run: lix download
     
     - name: Run tests
-    - run: lix run travix node
+      run: lix run travix node
