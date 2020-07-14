@@ -68,6 +68,7 @@ class RunTests {
 		signal.trigger(Full(new MyModel()));
 		asserts.assert(ext != null);
 		asserts.assert(ext.i == 0);
+		asserts.assert(ext.n == null);
 		
 		signal.trigger(Member(i(1)));
 		asserts.assert(ext.i == 1);
@@ -79,6 +80,9 @@ class RunTests {
 		
 		signal.trigger(Member(s(Member(i1(2)))));
 		asserts.assert(ext.s.i1 == 2);
+		
+		signal.trigger(Member(s(Full(null))));
+		asserts.assert(ext.s == null);
 		
 		return asserts.done();
 	}
@@ -115,6 +119,7 @@ class RunTests {
 class MyModel implements Model {
 	@:editable var i:Int = @byDefault 0;
 	@:editable var s:SubModel = @byDefault new SubModel();
+	@:editable var n:SubModel = @byDefault null;
 }
 
 

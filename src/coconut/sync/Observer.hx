@@ -67,11 +67,16 @@ class Observer {
 						[
 							model.observables.$fname.bind({direct: direct}, model -> {
 								binding.cancel();
-								if(first) first = false;
-								else trigger(Member($i{ename}(Full(model))));
-								binding = coconut.sync.Observer.observe(model, direct).handle(v -> {
-									trigger(Member($i{ename}(v)));
-								});
+								
+								if(first)
+									first = false;
+								else
+									trigger(Member($i{ename}(Full(model))));
+								
+								if(model != null)
+									binding = coconut.sync.Observer.observe(model, direct).handle(v -> {
+										trigger(Member($i{ename}(v)));
+									});
 							}),
 							(function() binding.cancel():tink.core.Callback.CallbackLink),
 						];

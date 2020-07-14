@@ -47,7 +47,7 @@ class Applier {
 				if(isModel(field.type, field.pos)) {
 					cases.push({
 						values: [macro $i{fname}(Full(v))],
-						expr: macro model._cocosync_patch({$fname: new coconut.sync.External<$fct>(v)})
+						expr: macro model._cocosync_patch({$fname: v == null ? null : new coconut.sync.External<$fct>(v)})
 					});
 					cases.push({
 						values: [macro $i{fname}(Member(v))],

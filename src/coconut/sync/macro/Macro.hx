@@ -20,7 +20,7 @@ class Macro {
 					case TAnonymous(_.get() => {fields: fields}):
 						fields.filter(f -> f.name != 'isInTransition')
 							.map(f -> {
-								final ct = f.type.toComplex();
+								final ct = f.type.reduce().toComplex();
 								{
 									name: f.name,
 									pos: f.pos,

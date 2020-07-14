@@ -56,7 +56,10 @@ class External {
 					expr:
 						if(isMod) {
 							final ect = field.type.toComplex();
-							macro new coconut.sync.External<$ect>(model.$fname);
+							macro switch model.$fname {
+								case null: null;
+								case v: new coconut.sync.External<$ect>(v);
+							}
 						} else {
 							macro model.$fname;
 						},
